@@ -93,6 +93,9 @@ int main(int argc, char const *argv[]) {
     
     transpose(Ct, C, L, N);
     print("C = ", C, N, L);
+
+    free(Bt);
+    free(Ct);
   } else {
     A = (int *) malloc(N * M * sizeof(int));
     B = (int *) malloc(num_cols * M * sizeof(int));
