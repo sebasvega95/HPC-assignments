@@ -84,8 +84,8 @@ int main(int argc, char const *argv[]) {
       MPI_Recv(Ct + N * (i - 1) * num_cols, num_cols * N, MPI_INT, i, MUL_MAT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
     
-    int missing = N % (np - 1);
-    int missing_offset = N - missing;
+    int missing = L % (np - 1);
+    int missing_offset = L - missing;
     
     for (int i = 0; i < missing; i++) {
       matrixVectorMul(A, Bt + (missing_offset + i) * M, Ct + (missing_offset + i) * N, N, M);
