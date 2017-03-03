@@ -53,11 +53,11 @@ void testRand(int *A, int *B, int n, int m, int l, int max) {
 }
 
 int getMaxError(int *X, int *Y, int n, int m) {
-  int max_error = INT_MAX;
+  int max_error = -INT_MAX;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       int _error = abs(X[i * n + j] - Y[i * n + j]);
-      max_error = _error > max_error ? max_error : _error;
+      max_error = _error > max_error ? _error : max_error;
     }
   }
   return max_error;
