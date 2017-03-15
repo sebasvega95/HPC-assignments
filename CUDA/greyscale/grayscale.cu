@@ -37,7 +37,7 @@ void grayscaleKernel(unsigned char* d_img, unsigned char* d_out_img, int width, 
   }
 }
 
-void grayscale(unsigned char *h_img, unsigned char *img_times2, int width, int height) {
+void grayscale(unsigned char *h_img, unsigned char *img_grayscale, int width, int height) {
   int size = width * height * sizeof(unsigned char);
   unsigned char *d_img, *d_out_img;
   cudaError_t err;
@@ -50,8 +50,8 @@ void grayscale(unsigned char *h_img, unsigned char *img_times2, int width, int h
   dim3 dim_grid(ceil((double) width / block_size), ceil((double) height / block_size), 1);
   dim3 dim_block(block_size, block_size, 1);
   grayscaleKernel<<<dim_grid, dim_block>>>(d_img, d_out_img, width, height);
-  err = cudaMemcpy(img_times2, d_out_img, size, cudaMemcpyDeviceToHost); checkError(err);
   cudaDeviceSynchronize();
+  err = cudaMemcpy(img_grayscale, d_out_img, size, cudaMemcpyDeviceToHost); checkError(err);
   
   err = cudaFree(d_img); checkError(err);
   err = cudaFree(d_out_img); checkError(err);

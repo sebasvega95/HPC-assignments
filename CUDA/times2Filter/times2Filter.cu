@@ -38,8 +38,8 @@ void times2Filter(unsigned char *h_img, unsigned char *img_times2, int width, in
   dim3 dim_grid(ceil((double) width / block_size), ceil((double) height / block_size), 1);
   dim3 dim_block(block_size, block_size, 1);
   times2FilterKernel<<<dim_grid, dim_block>>>(d_img, d_out_img, width, height);
-  err = cudaMemcpy(img_times2, d_out_img, size, cudaMemcpyDeviceToHost); checkError(err);
   cudaDeviceSynchronize();
+  err = cudaMemcpy(img_times2, d_out_img, size, cudaMemcpyDeviceToHost); checkError(err);
   
   err = cudaFree(d_img); checkError(err);
   err = cudaFree(d_out_img); checkError(err);
