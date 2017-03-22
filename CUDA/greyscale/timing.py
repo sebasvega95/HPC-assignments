@@ -1,15 +1,15 @@
 from time import time
-from subprocess import call
 from os import remove
 from matplotlib.image import imread
 import json
+import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 def time_a_function(program, args):
     start = time()
-    call([program] + [args])
+    subprocess.call([program] + [args])
     end = time()
     return float(end - start)
     
@@ -45,13 +45,11 @@ def print_results(times, programs, images):
 
 def main():
     print 'Running make...'
-    call(['make', '-j8'])
-    print '\n'
+    subprocess.call(['make', '-j8'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     programs = ['./grayscale.out', './grayscale-seq.out']
     images = ['img/emma{}.png'.format(i) for i in range(1, 6)]
     n = 20
     times = {}
-    
     try:
         print 'Loading times.json...'
         time_file = open('times.json', 'r')
