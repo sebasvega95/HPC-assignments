@@ -12,7 +12,6 @@ void runProgram(int n) {
   
   matrix::initRandom(matA, n);
   matrix::initRandom(matB, n);
-  matrix::initRandom(matC, n);
   
   matrix::seqMul(matA, matB, matC, n);
   
