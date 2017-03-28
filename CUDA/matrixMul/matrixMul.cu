@@ -80,7 +80,6 @@ void runProgram(int n, bool test) {
   
   matrix::initRandom(matA, n);
   matrix::initRandom(matB, n);
-  matrix::initRandom(matC, n);
   
   matrixMul(matA, matB, matC, n);
   
