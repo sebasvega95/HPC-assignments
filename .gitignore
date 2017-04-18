@@ -1,4 +1,5 @@
 *.o
 *.out
+*.nvvp
 times.json
 

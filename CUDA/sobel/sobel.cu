@@ -51,17 +51,18 @@ void magnitudeKernel(float* x, float* y, unsigned char* r, int width, int height
   }
 }
 
-void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int height) {
+void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int height, bool measure) {
   unsigned char *d_img, *d_img_sobel;
   float *d_img_sobel_x, *d_img_sobel_y;
   float *d_sobel_x, *d_sobel_y;
-  int size = width * height;
+  long long size = width * height;
   cudaError_t err;
+  cudaEvent_t start, stop;
 
-  err = cudaMalloc((void**) &d_img,         size * sizeof(unsigned char)); checkError(err);
-  err = cudaMalloc((void**) &d_img_sobel,   size * sizeof(unsigned char)); checkError(err);
-  err = cudaMalloc((void**) &d_img_sobel_x, size * sizeof(float));         checkError(err);
-  err = cudaMalloc((void**) &d_img_sobel_y, size * sizeof(float));         checkError(err);
+  err = cudaMalloc((void**) &d_img, size * sizeof(unsigned char)); checkError(err);
+  err = cudaMalloc((void**) &d_img_sobel, size * sizeof(unsigned char)); checkError(err);
+  err = cudaMalloc((void**) &d_img_sobel_x, size * sizeof(float)); checkError(err);
+  err = cudaMalloc((void**) &d_img_sobel_y, size * sizeof(float)); checkError(err);
   err = cudaMalloc((void**) &d_sobel_x, 9 * sizeof(float)); checkError(err);
   err = cudaMalloc((void**) &d_sobel_y, 9 * sizeof(float)); checkError(err);
   
@@ -76,6 +77,13 @@ void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int heig
   dim3 dim_grid(ceil((double) width / block_size), ceil((double) height / block_size), 1);
   dim3 dim_block(block_size, block_size, 1);
 
+  if (measure) {
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    
+    cudaEventRecord(start);
+  }
+
   convolutionKernel<<<dim_grid, dim_block>>>(d_img, d_sobel_x, d_img_sobel_x, 3, width, height);
   cudaDeviceSynchronize();
   
@@ -85,6 +93,21 @@ void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int heig
   magnitudeKernel<<<dim_grid, dim_block>>>(d_img_sobel_x, d_img_sobel_y, d_img_sobel, width, height);
   cudaDeviceSynchronize();
 
+  if (measure) {
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    float seconds = 0;
+    cudaEventElapsedTime(&seconds, start, stop);
+    seconds *= 1E-3;
+    int num_arrays_float = 4;
+    int num_arrays_uchar = 2;
+    int bytes = num_arrays_float * sizeof(float) + num_arrays_uchar * sizeof(unsigned char);
+    int num_ops = 9 * 3;
+    
+    printf("Effective bandwidth:      %.6f GB/s\n", size * bytes / seconds * 1E-9);
+    printf("Computational throughput: %.6f GB/s\n", num_ops * size / seconds * 1E-9);
+  }
+
   err = cudaMemcpy(h_img_sobel, d_img_sobel, size * sizeof(unsigned char), cudaMemcpyDeviceToHost); checkError(err);
   
   err = cudaFree(d_img); checkError(err);
@@ -93,14 +116,14 @@ void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int heig
   err = cudaFree(d_img_sobel); checkError(err);
 }
 
-void runProgram(Mat& image, bool show) {
+void runProgram(Mat& image, bool show, bool measure) {
   int height = image.rows;
   int width = image.cols;
  
   unsigned char *img_sobel = (unsigned char*) malloc(width * height * sizeof(unsigned char));
   unsigned char *img = (unsigned char*) image.data;
 
-  sobel(img, img_sobel, width, height);
+  sobel(img, img_sobel, width, height, measure);
 
   if (show) {
     imshow("Input", Mat(height, width, CV_8UC1, img));
@@ -114,9 +137,10 @@ void runProgram(Mat& image, bool show) {
 
 void usage(char* program_name) {
   int n = 1;
-  string opts[] = {"-s, --show"};
+  string opts[] = {"-s, --show", "-s, --measure"};
   string description[] = {
-    "Show original image and result"
+    "Show original image and result",
+    "Permormance measures"
   };
 
   cout << "Usage: " << program_name << " [options ...] img1" << endl;
@@ -133,14 +157,19 @@ int main(int argc, char** argv) {
   int opt, opt_index = 0;
     static struct option options[] = {
       {"show", no_argument, 0, 's'},
+      {"measure", no_argument, 0, 'm'},
       {0, 0, 0, 0}
   };
   
   bool show = false;
-  while ((opt = getopt_long(argc, argv, "s", options, &opt_index)) != -1) {
+  bool measure = false;
+  while ((opt = getopt_long(argc, argv, "sm", options, &opt_index)) != -1) {
     switch (opt) {
       case 's':
         show = true;
+        break;
+      case 'm':
+        measure = true;
         break;
       default:
         usage(argv[0]);
@@ -159,7 +188,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
   
-  runProgram(image, show);
+  runProgram(image, show, measure);
   
   return 0;
 }
