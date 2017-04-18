@@ -13,9 +13,7 @@ void runProgram(gpu::GpuMat& image, bool show) {
   gpu::GpuMat img_sobel_x, img_sobel_y, img_sobel;
 
   gpu::Sobel(image, img_sobel_x, CV_32F, 1, 0);
-  cout << "yay x" << endl;
   gpu::Sobel(image, img_sobel_y, CV_32F, 0, 1);
-  cout << "yay x" << endl;
 
   gpu::magnitude(img_sobel_x, img_sobel_y, img_sobel);
   
@@ -71,7 +69,6 @@ int main(int argc, char** argv) {
   }
 
   Mat h_image = imread(argv[optind], CV_LOAD_IMAGE_GRAYSCALE);
-  cout << "image read" << endl;
   if (!h_image.data) {
     printf("Could not open or find %s\n", argv[optind]);
     exit(EXIT_FAILURE);
