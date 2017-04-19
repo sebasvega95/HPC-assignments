@@ -1,5 +1,7 @@
 *.o
 *.out
 *.nvvp
+*.csv
 times.json
+
 

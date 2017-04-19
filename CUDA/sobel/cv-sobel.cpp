@@ -9,24 +9,6 @@
 using namespace cv;
 using namespace std;
 
-void runProgram(gpu::GpuMat& image, bool show) {
-  gpu::GpuMat img_sobel_x, img_sobel_y, img_sobel;
-
-  gpu::Sobel(image, img_sobel_x, CV_32F, 1, 0);
-  gpu::Sobel(image, img_sobel_y, CV_32F, 0, 1);
-
-  gpu::magnitude(img_sobel_x, img_sobel_y, img_sobel);
-  
-  if (show) {
-    Mat h_img_sobel(img_sobel);
-    convertScaleAbs(h_img_sobel, h_img_sobel);
-    imshow("Input", Mat(image));
-    waitKey(0);
-    imshow("Sobel operator", h_img_sobel);
-    waitKey(0);
-  }
-}
-
 void usage(char* program_name) {
   int n = 1;
   string opts[] = {"-s, --show"};
@@ -74,8 +56,22 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
   
-  gpu::GpuMat d_image(h_image);
-  runProgram(d_image, show);
+  gpu::GpuMat d_image, d_img_sobel_x, d_img_sobel_y, d_img_sobel;
+  d_image.upload(h_image);
+
+  gpu::Sobel(d_image, d_img_sobel_x, CV_32F, 1, 0);
+  gpu::Sobel(d_image, d_img_sobel_y, CV_32F, 0, 1);
+
+  gpu::magnitude(d_img_sobel_x, d_img_sobel_y, d_img_sobel);
+  
+  if (show) {
+    Mat h_img_sobel(d_img_sobel);
+    convertScaleAbs(h_img_sobel, h_img_sobel);
+    imshow("Input", Mat(h_image));
+    waitKey(0);
+    imshow("Sobel operator", h_img_sobel);
+    waitKey(0);
+  }
   
   return 0;
 }
