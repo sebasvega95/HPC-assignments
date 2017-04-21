@@ -40,6 +40,29 @@ void convolutionKernel(unsigned char* image, float* kernel, float* out_image, in
   }
 }
 
+__device__
+float Q_rsqrt( float number )
+{
+	long i;
+	float x2, y;
+	const float threehalfs = 1.5F;
+
+	x2 = number * 0.5F;
+	y  = number;
+	i  = * ( long * ) &y;                       // evil floating point bit level hacking
+	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+//	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+	return y;
+}
+
+__device__
+float Q_sqrt(float x) {
+  return x * Q_rsqrt(x);
+}
+
 __global__
 void magnitudeKernel(float* x, float* y, unsigned char* r, int width, int height) {
   int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -47,7 +70,7 @@ void magnitudeKernel(float* x, float* y, unsigned char* r, int width, int height
 
   if (row < height && col < width) {
     int idx = row * width + col;
-    r[idx] = (unsigned char) hypotf(x[idx], y[idx]);
+    r[idx] = (unsigned char) Q_sqrt(x[idx] * x[idx] + y[idx] * y[idx]);
   }
 }
 
