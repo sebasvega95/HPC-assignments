@@ -152,7 +152,7 @@ void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int heig
     
     int num_arrays = 2;
     int bytes = num_arrays * sizeof(unsigned char);
-    int num_ops = 9 * 2;
+    int num_ops = 2 * 9 * 2 + 6;
     
     float bw = size * bytes / seconds * 1E-9;
     float th = size * num_ops / seconds * 1E-9;

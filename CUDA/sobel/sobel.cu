@@ -113,27 +113,25 @@ void sobel(unsigned char *h_img, unsigned char *h_img_sobel, int width, int heig
   convolutionKernel<<<dim_grid, dim_block>>>(d_img, d_sobel_y, d_img_sobel_y, 3, width, height);
   cudaDeviceSynchronize();
   
-   if (measure) {
+  magnitudeKernel<<<dim_grid, dim_block>>>(d_img_sobel_x, d_img_sobel_y, d_img_sobel, width, height);
+  cudaDeviceSynchronize();
+  
+  if (measure) {
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
     float seconds = 0;
     cudaEventElapsedTime(&seconds, start, stop);
     seconds *= 1E-3;
-    int num_arrays_float = 2;
-    int num_arrays_uchar = 1;
-    int bytes_conv = num_arrays_float * sizeof(float) + num_arrays_uchar * sizeof(unsigned char);
-    int num_ops_conv = 9 * 2;
-    int num_kernels = 2;
-    int bytes_kernel = num_kernels * sizeof(float);
+    int num_arrays_float = 4;
+    int num_arrays_uchar = 2;
+    int bytes = num_arrays_float * sizeof(float) + num_arrays_uchar * sizeof(unsigned char);
+    int num_ops = 2 * 9 * 2 + 6;
     
-    float bw = (size * bytes_conv + 2 * bytes_kernel) / seconds * 1E-9;
-    float th = 2 * num_ops_conv * size / seconds * 1E-9;
+    float bw = size * bytes / seconds * 1E-9;
+    float th = num_ops * size / seconds * 1E-9;
     printf("Effective bandwidth & Computational throughput\n");
     printf("%2.5f (GB/s)     & %2.5f (GFLOPS/s)\n", bw, th);
   }
-  
-  magnitudeKernel<<<dim_grid, dim_block>>>(d_img_sobel_x, d_img_sobel_y, d_img_sobel, width, height);
-  cudaDeviceSynchronize();
 
   err = cudaMemcpy(h_img_sobel, d_img_sobel, size * sizeof(unsigned char), cudaMemcpyDeviceToHost); checkError(err);
   
