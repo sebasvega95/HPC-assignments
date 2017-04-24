@@ -3,7 +3,7 @@ CC = g++
 CFLAGS = `pkg-config --cflags opencv`
 LIBS = `pkg-config --libs opencv`
 
-all: parallel sequential cv-sequential cv-parallel
+all: parallel sequential cv-sequential cv-parallel memory
 
 parallel: sobel.cu
 	$(CUDAC) $(CFLAGS) sobel.cu $(LIBS) -o sobel.out
@@ -16,4 +16,10 @@ cv-sequential: cv-sobel-seq.cpp
 
 cv-parallel: cv-sobel.cpp
 	$(CC) $(CFLAGS) cv-sobel.cpp $(LIBS) -o cv-sobel.out
+
+memory: sobel-mem.cu
+	$(CUDAC) $(CFLAGS) sobel-mem.cu $(LIBS) -o sobel-mem.out
+	
+clean:
+	rm *.out
 
