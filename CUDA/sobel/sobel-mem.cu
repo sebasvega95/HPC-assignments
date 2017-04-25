@@ -53,6 +53,11 @@ float Q_sqrt(float x) {
   return x * Q_rsqrt(x);
 }
 
+__device__
+unsigned char saturate_uchar(float x) {
+  return (unsigned char) min(max(round(x), 0.0f), 255.0f);
+}
+
 __constant__ float sobel_x[KERNEL_ORDER * KERNEL_ORDER];
 __constant__ float sobel_y[KERNEL_ORDER * KERNEL_ORDER];
 
@@ -110,7 +115,7 @@ void sobelOperatorKernel(unsigned char* image, unsigned char* out_image, int wid
     }
     
     // Calculate gradient magnitude
-    out_image[row * width + col] = (unsigned char) Q_sqrt(grad_x * grad_x + grad_y * grad_y);
+    out_image[row * width + col] = saturate_uchar(Q_sqrt(grad_x * grad_x + grad_y * grad_y));
   }
 }
 

@@ -36,7 +36,7 @@ void image_magnitude(float* x, float* y, unsigned char* r, int width, int height
   for (int row = 0; row < height; row++) {
     for (int col = 0; col < width; col++) {
       int idx = row * width + col;
-      r[idx] = (unsigned char) hypot(x[idx], y[idx]);
+      r[idx] = saturate_cast<unsigned char>(hypot(x[idx], y[idx]));
     }
   }
 }

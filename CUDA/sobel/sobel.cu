@@ -63,6 +63,11 @@ float Q_sqrt(float x) {
   return x * Q_rsqrt(x);
 }
 
+__device__
+unsigned char saturate_uchar(float x) {
+  return (unsigned char) min(max(round(x), 0.0f), 255.0f);
+}
+
 __global__
 void magnitudeKernel(float* x, float* y, unsigned char* r, int width, int height) {
   int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -70,7 +75,7 @@ void magnitudeKernel(float* x, float* y, unsigned char* r, int width, int height
 
   if (row < height && col < width) {
     int idx = row * width + col;
-    r[idx] = (unsigned char) Q_sqrt(x[idx] * x[idx] + y[idx] * y[idx]);
+    r[idx] = saturate_uchar(Q_sqrt(x[idx] * x[idx] + y[idx] * y[idx]));
   }
 }
 
