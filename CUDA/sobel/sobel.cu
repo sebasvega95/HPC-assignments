@@ -161,8 +161,8 @@ void runProgram(Mat& image, bool show, bool measure) {
 }
 
 void usage(char* program_name) {
-  int n = 1;
-  string opts[] = {"-s, --show", "-s, --measure"};
+  int n = 2;
+  string opts[] = {"-s, --show", "-m, --measure"};
   string description[] = {
     "Show original image and result",
     "Permormance measures"
